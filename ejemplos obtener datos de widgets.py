@@ -2,8 +2,12 @@ import tkinter as tk
 from tkinter import ttk
 
 def button_func():
-    #obtener contenido de entrada
-    print(entry.get())
+    entrytext = entry.get()
+
+    #label.config(text = 'some other text')
+    label['text'] = entrytext
+    #entry['state'] = 'disabled' deshabilitar algo
+    
 
 window = tk.Tk()
 window.title('Consiguiendo y seteando widgets')
