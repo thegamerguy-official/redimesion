@@ -32,4 +32,8 @@ radio1 = ttk.Radiobutton(window, text = 'radiobutton1', value = 1, command = lam
 radio2 = ttk.Radiobutton(window, text = 'radiobutton2', value = 'radio', variable = radio_var)
 radio1.pack()
 radio2.pack()
+# Esto hace que ambos radio buttons se marquen a la vez al compartir un valor comun.
+radio_var2 = tk.StringVar()
+radio3 = ttk.Radiobutton(window, text = 'Radio 3', value = 1, variable = radio_var2)
+radio4 = ttk.Radiobutton(window, text = 'Radio 4', value = 1, variable = radio_var2)
 window.mainloop()
