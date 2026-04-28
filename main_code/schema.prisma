@@ -13,9 +13,9 @@ datasource db {
 }
 
 model Tenant {
-  id          String   @id @default(uuid())
-  name        String
-  createdAt   DateTime @default(now())
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(255)
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
   
   skus        SKU[]
   boxTypes    BoxType[]
@@ -23,71 +23,77 @@ model Tenant {
 }
 
 model SKU {
-  id          String   @id @default(uuid())
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
-  skuCode     String   // Identificador del cliente (ej. EAN o ref. interna)
-  name        String
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  skuCode     String   @db.VarChar(100)
+  name        String   @db.VarChar(255)
   
-  // Dimensiones físicas (en cm para facilitar los cálculos logísticos)
-  length_cm   Float
-  width_cm    Float
-  height_cm   Float
-  weight_g    Float    // Peso real en gramos
+  length_cm   Float    @db.Real
+  width_cm    Float    @db.Real
+  height_cm   Float    @db.Real
+  weight_g    Float    @db.Real
   
   orderItems  OrderItem[]
 
   @@unique([tenantId, skuCode])
+  @@index([tenantId])
 }
 
 model BoxType {
-  id             String   @id @default(uuid())
-  tenantId       String
-  tenant         Tenant   @relation(fields: [tenantId], references: [id])
-  name           String   // ej. "Caja A", "Sobre Kraft"
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @db.Uuid
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name           String   @db.VarChar(255)
   
-  // Dimensiones externas (en cm)
-  length_cm      Float
-  width_cm       Float
-  height_cm      Float
+  length_cm      Float    @db.Real
+  width_cm       Float    @db.Real
+  height_cm      Float    @db.Real
   
-  grammage_kg_m2 Float    @default(0.5) // Gramaje del cartón (ej. 500g/m2 = 0.5 kg/m2)
+  grammage_kg_m2 Float    @default(0.5) @db.Real
   
   orders         OrderHistory[]
+
+  @@index([tenantId])
 }
 
 model OrderHistory {
-  id               String   @id @default(uuid())
-  tenantId         String
-  tenant           Tenant   @relation(fields: [tenantId], references: [id])
-  orderReference   String   // ID de pedido del e-commerce (ej. #10045)
+  id               String   @id @default(uuid()) @db.Uuid
+  tenantId         String   @db.Uuid
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orderReference   String   @db.VarChar(100)
   
-  // Caja óptima dictada por REDIMENSION
-  selectedBoxId    String
-  selectedBox      BoxType  @relation(fields: [selectedBoxId], references: [id])
+  selectedBoxId    String   @db.Uuid
+  selectedBox      BoxType  @relation(fields: [selectedBoxId], references: [id], onDelete: Restrict)
   
-  // Dimensiones inmutables de la Caja REDIMENSION (óptima)
-  redLength_cm     Float
-  redWidth_cm      Float
-  redHeight_cm     Float
-  redVolume_cm3    Float    // Volumen REDIMENSION
+  redLength_cm     Float    @db.Real
+  redWidth_cm      Float    @db.Real
+  redHeight_cm     Float    @db.Real
+  redVolume_cm3    Float    @db.Real
   
-  // Dimensiones inmutables de la Caja Teórica (ineficiente / estándar del cliente)
-  theoLength_cm    Float
-  theoWidth_cm     Float
-  theoHeight_cm    Float
-  theoVolume_cm3   Float    // Volumen Teórico
+  theoLength_cm    Float    @db.Real
+  theoWidth_cm     Float    @db.Real
+  theoHeight_cm    Float    @db.Real
+  theoVolume_cm3   Float    @db.Real
   
-  processedAt      DateTime @default(now())
+  processedAt      DateTime @default(now()) @db.Timestamptz(3)
   
   items            OrderItem[]
+
+  // Indices estrategicos para optimizacion de agregaciones y lecturas masivas
+  @@index([tenantId, processedAt(sort: Desc)])
+  @@index([tenantId, orderReference])
+  @@index([selectedBoxId])
 }
 
 model OrderItem {
-  id              String       @id @default(uuid())
-  orderHistoryId  String
-  orderHistory    OrderHistory @relation(fields: [orderHistoryId], references: [id])
-  skuId           String
-  sku             SKU          @relation(fields: [skuId], references: [id])
-  quantity        Int
+  id              String       @id @default(uuid()) @db.Uuid
+  orderHistoryId  String       @db.Uuid
+  orderHistory    OrderHistory @relation(fields: [orderHistoryId], references: [id], onDelete: Cascade)
+  skuId           String       @db.Uuid
+  sku             SKU          @relation(fields: [skuId], references: [id], onDelete: Restrict)
+  quantity        Int          @db.SmallInt
+  
+  @@index([orderHistoryId])
+  @@index([skuId])
 }
