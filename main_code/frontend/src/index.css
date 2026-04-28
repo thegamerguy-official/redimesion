@@ -1,0 +1,67 @@
+:root {
+  /* Paleta Industrial Alto Contraste */
+  --bg-dark: #020617;
+  --bg-panel: #1e293b;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  
+  --color-success: #22c55e;
+  --bg-success: #14532d;
+  --border-success: #16a34a;
+  
+  --color-danger: #ef4444;
+  --bg-danger: #7f1d1d;
+  --border-danger: #b91c1c;
+
+  font-family: 'Inter', 'Roboto', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: var(--text-primary);
+  background-color: var(--bg-dark);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  min-height: 100vh;
+  min-width: 100vw;
+  font-size: 24px; /* Tipografía gigante base A11y */
+  overflow: hidden; /* Evitar scroll en pantalla industrial */
+}
+
+#root {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Reset de botones para accesibilidad */
+button {
+  border-radius: 12px;
+  border: 4px solid transparent;
+  padding: 1.2em 2em;
+  font-size: 1.2rem;
+  font-weight: bold;
+  font-family: inherit;
+  background-color: var(--bg-panel);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 120px; /* Touch target masivo */
+}
+
+button:hover {
+  filter: brightness(1.2);
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}

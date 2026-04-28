@@ -1,0 +1,93 @@
+generator py {
+  provider  = "prisma-client-py"
+  interface = "sync"
+}
+
+generator js {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id          String   @id @default(uuid())
+  name        String
+  createdAt   DateTime @default(now())
+  
+  skus        SKU[]
+  boxTypes    BoxType[]
+  orders      OrderHistory[]
+}
+
+model SKU {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  skuCode     String   // Identificador del cliente (ej. EAN o ref. interna)
+  name        String
+  
+  // Dimensiones físicas (en cm para facilitar los cálculos logísticos)
+  length_cm   Float
+  width_cm    Float
+  height_cm   Float
+  weight_g    Float    // Peso real en gramos
+  
+  orderItems  OrderItem[]
+
+  @@unique([tenantId, skuCode])
+}
+
+model BoxType {
+  id             String   @id @default(uuid())
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id])
+  name           String   // ej. "Caja A", "Sobre Kraft"
+  
+  // Dimensiones externas (en cm)
+  length_cm      Float
+  width_cm       Float
+  height_cm      Float
+  
+  grammage_kg_m2 Float    @default(0.5) // Gramaje del cartón (ej. 500g/m2 = 0.5 kg/m2)
+  
+  orders         OrderHistory[]
+}
+
+model OrderHistory {
+  id               String   @id @default(uuid())
+  tenantId         String
+  tenant           Tenant   @relation(fields: [tenantId], references: [id])
+  orderReference   String   // ID de pedido del e-commerce (ej. #10045)
+  
+  // Caja óptima dictada por REDIMENSION
+  selectedBoxId    String
+  selectedBox      BoxType  @relation(fields: [selectedBoxId], references: [id])
+  
+  // Dimensiones inmutables de la Caja REDIMENSION (óptima)
+  redLength_cm     Float
+  redWidth_cm      Float
+  redHeight_cm     Float
+  redVolume_cm3    Float    // Volumen REDIMENSION
+  
+  // Dimensiones inmutables de la Caja Teórica (ineficiente / estándar del cliente)
+  theoLength_cm    Float
+  theoWidth_cm     Float
+  theoHeight_cm    Float
+  theoVolume_cm3   Float    // Volumen Teórico
+  
+  processedAt      DateTime @default(now())
+  
+  items            OrderItem[]
+}
+
+model OrderItem {
+  id              String       @id @default(uuid())
+  orderHistoryId  String
+  orderHistory    OrderHistory @relation(fields: [orderHistoryId], references: [id])
+  skuId           String
+  sku             SKU          @relation(fields: [skuId], references: [id])
+  quantity        Int
+}
