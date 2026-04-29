@@ -2,5 +2,5 @@
 
   **Repositorio de Github de la app REDIMENSION.**
 
-El código antiguo está en la carpeta de main_code_legacy, así que no os preocupéis de perder vuestro código. 
+Esta branch es una legacy branch que contiene código hecho por IA, el cual este repositorio ya no acepta. 
 </div>
